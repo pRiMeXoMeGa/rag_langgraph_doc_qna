@@ -7,6 +7,53 @@
 
 
 This is a production-ready backend built with **FastAPI** and **LangChain** that implements a multi-step GenAI workflow. It allows users to upload PDF documents, process them into a vector store, and perform intelligent queries using an **Agentic RAG** pattern.
+---
+## 🎯 Problem Statement
+
+### The Problem
+
+Organizations and individuals deal with an ever-growing volume of PDF documents—research papers, legal contracts, technical manuals, financial reports, and more. Extracting specific information from these documents is:
+
+| Challenge | Description |
+|-----------|-------------|
+| **Time-consuming** | Manually searching through hundreds of pages |
+| **Error-prone** | Human fatigue leads to missed information |
+| **Inefficient** | Same questions asked repeatedly require re-reading |
+| **Inaccessible** | Non-technical users struggle with document analysis |
+
+### Who It's For
+
+| User Type | Use Case |
+|-----------|----------|
+| **Researchers** | Query academic papers, extract citations, compare findings |
+| **Legal Professionals** | Search contracts, find specific clauses, review agreements |
+| **Students** | Study from textbooks, prepare for exams, understand concepts |
+| **Business Analysts** | Extract insights from reports, analyze financial documents |
+| **Support Teams** | Query product manuals, find troubleshooting steps |
+| **Developers** | Build document-powered chatbots and applications |
+
+### The Solution
+
+This RAG Agent API provides a simple REST interface to:
+1. **Upload** PDF documents
+2. **Process** them into searchable vector embeddings
+3. **Query** them using natural language questions
+4. **Receive** accurate, contextual answers
+
+---
+
+## ✨ Features
+
+- 📄 **PDF Upload & Processing** - Automatic text extraction and chunking
+- 🔍 **Semantic Search** - Find relevant content using meaning, not just keywords
+- 🤖 **Agentic RAG** - LLM decides when and how to search documents
+- 💾 **Persistent Storage** - Vector stores survive server restarts
+- 📚 **Multi-Document Management** - Upload and manage multiple documents
+- 🔌 **RESTful API** - Easy integration with any application
+- 📊 **Health Monitoring** - Built-in health check endpoint
+
+---
+
 
 ## 🚀 GenAI Workflow Overview
 
@@ -100,52 +147,7 @@ The API will be available at `http://localhost:8000`. You can access the interac
 * **State Management**: Using LangGraph ensures the agent doesn't enter infinite loops and maintains a clear execution path.
 * **Error Handling**: Comprehensive try-except blocks manage API failures and file system errors, providing clear HTTP exceptions to the frontend.
 
-## 🎯 Problem Statement
-
-### The Problem
-
-Organizations and individuals deal with an ever-growing volume of PDF documents—research papers, legal contracts, technical manuals, financial reports, and more. Extracting specific information from these documents is:
-
-| Challenge | Description |
-|-----------|-------------|
-| **Time-consuming** | Manually searching through hundreds of pages |
-| **Error-prone** | Human fatigue leads to missed information |
-| **Inefficient** | Same questions asked repeatedly require re-reading |
-| **Inaccessible** | Non-technical users struggle with document analysis |
-
-### Who It's For
-
-| User Type | Use Case |
-|-----------|----------|
-| **Researchers** | Query academic papers, extract citations, compare findings |
-| **Legal Professionals** | Search contracts, find specific clauses, review agreements |
-| **Students** | Study from textbooks, prepare for exams, understand concepts |
-| **Business Analysts** | Extract insights from reports, analyze financial documents |
-| **Support Teams** | Query product manuals, find troubleshooting steps |
-| **Developers** | Build document-powered chatbots and applications |
-
-### The Solution
-
-This RAG Agent API provides a simple REST interface to:
-1. **Upload** PDF documents
-2. **Process** them into searchable vector embeddings
-3. **Query** them using natural language questions
-4. **Receive** accurate, contextual answers
-
 ---
-
-## ✨ Features
-
-- 📄 **PDF Upload & Processing** - Automatic text extraction and chunking
-- 🔍 **Semantic Search** - Find relevant content using meaning, not just keywords
-- 🤖 **Agentic RAG** - LLM decides when and how to search documents
-- 💾 **Persistent Storage** - Vector stores survive server restarts
-- 📚 **Multi-Document Management** - Upload and manage multiple documents
-- 🔌 **RESTful API** - Easy integration with any application
-- 📊 **Health Monitoring** - Built-in health check endpoint
-
----
-
 ## 🏗 Architecture
 
 ```text
@@ -410,4 +412,5 @@ MIT License - feel free to use this project for any purpose.
 
 
 **Built with ❤️ using FastAPI, LangChain, LangGraph, React, and OpenAI**
+
 
