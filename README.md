@@ -1,30 +1,104 @@
-# 📚 RAG Agent API
-
-A production-ready Retrieval-Augmented Generation (RAG) API built with FastAPI and LangGraph that enables intelligent document querying using OpenAI's language models.
+# RAG Agent API
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
 ![LangChain](https://img.shields.io/badge/LangChain-Latest-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+
+This is a production-ready backend built with **FastAPI** and **LangChain** that implements a multi-step GenAI workflow. It allows users to upload PDF documents, process them into a vector store, and perform intelligent queries using an **Agentic RAG** pattern.
+
+## 🚀 GenAI Workflow Overview
+
+The application goes beyond simple API calls by orchestrating a multi-step **Agentic Retrieval-Augmented Generation** workflow:
+
+1. **Ingestion Pipeline**:
+* PDFs are parsed using `PyPDFLoader`.
+* Text is split into semantic chunks via `RecursiveCharacterTextSplitter` (1000 tokens/chunk, 200 overlap).
+* Embeddings are generated using OpenAI's `text-embedding-3-small` and persisted in a **ChromaDB** vector store.
+
+
+2. **Agentic Query Loop**:
+* Instead of a basic search, the system uses a **LangGraph** state machine.
+* The LLM (`gpt-4o`) acts as an agent that decides whether it needs to call a `retriever_tool` to answer the user's question.
+* The agent can iterate: it can search, evaluate the retrieved context, and decide to search again if more information is needed before providing a final grounded response.
+
+
+
 ---
 
-## 📋 Table of Contents
+## 🛠️ Tech Stack
 
-- [Problem Statement](#-problem-statement)
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Setup Instructions](#-setup-instructions)
-- [API Documentation](#-api-documentation)
-- [Frontend Integration](#-frontend-integration)
-- [GenAI Workflow Design](#-genai-workflow-design)
-- [Technical Decisions & Trade-offs](#-technical-decisions--trade-offs)
-- [AI Limitations & Safety](#-ai-limitations-errors--safety-considerations)
-- [Known Issues & Troubleshooting](#-known-issues--troubleshooting)
-- [Future Improvements](#-future-improvements)
-- [License](#-license)
+* **Framework**: FastAPI
+* **Orchestration**: LangChain & LangGraph
+* **LLM**: OpenAI GPT-4o
+* **Vector Database**: ChromaDB
+* **Environment**: Python 3.10+
 
 ---
+
+## 💻 Local Setup Instructions
+
+### 1. Prerequisites
+
+Ensure you have Python installed and an OpenAI API Key ready.
+
+### 2. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/pRiMeXoMeGa/rag_langgraph_doc_qna
+cd rag_langgraph_doc_qna
+
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+```
+
+### 3. Environment Variables
+
+Create a `.env` file in the root directory and add the following:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+UPLOAD_DIR=uploads
+VECTOR_STORE_DIR=vector_stores
+LLM_MODEL=gpt-4o
+EMBEDDING_MODEL=text-embedding-3-small
+
+```
+
+### 4. Running the Server
+
+```bash
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+```
+
+The API will be available at `http://localhost:8000`. You can access the interactive Swagger documentation at `http://localhost:8000/docs`.
+
+---
+
+## 📡 API Endpoints Summary
+
+* `GET /health`: Check system status.
+* `POST /upload`: Upload a PDF and trigger the embedding pipeline.
+* `POST /query`: Send a question to the Agentic RAG regarding a specific `document_id`.
+* `GET /documents`: List all processed documents and metadata.
+* `DELETE /documents/{id}`: Remove a document and its associated vector embeddings.
+
+---
+
+## 🛡️ Quality & Safety Measures
+
+* **Input Validation**: Strict file-type checking to ensure only PDFs are processed.
+* **Grounded Responses**: The system prompt explicitly instructs the agent to answer based on the retrieved document context.
+* **State Management**: Using LangGraph ensures the agent doesn't enter infinite loops and maintains a clear execution path.
+* **Error Handling**: Comprehensive try-except blocks manage API failures and file system errors, providing clear HTTP exceptions to the frontend.
 
 ## 🎯 Problem Statement
 
@@ -110,133 +184,6 @@ This RAG Agent API provides a simple REST interface to:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 🚀 Setup Instructions
-
-### Prerequisites
-
-- Python 3.9 or higher
-- OpenAI API key
-- pip (Python package manager)
-
-### Step 1: Clone the Repository
-
-```bash
-git clone [https://github.com/yourusername/rag-agent-api.git](https://github.com/yourusername/rag-agent-api.git)
-cd rag-agent-api
-```
-
-### Step 2: Create Virtual Environment
-
-```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate it
-# On Windows:
-venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
-```
-
-### Step 3: Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-**requirements.txt:**
-```txt
-fastapi>=0.100.0
-uvicorn>=0.23.0
-python-multipart>=0.0.6
-pydantic>=2.0.0
-langchain>=0.1.0
-langchain-openai>=0.0.5
-langchain-community>=0.0.10
-langchain-chroma>=0.1.0
-langgraph>=0.0.20
-chromadb>=0.4.0
-pypdf>=3.15.0
-python-dotenv>=1.0.0
-```
-
-### Step 4: Configure Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key-here
-
-# Model Configuration
-LLM_MODEL=gpt-4o-mini
-EMBEDDING_MODEL=text-embedding-3-small
-
-# RAG Configuration
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
-RETRIEVER_K=4
-
-# Storage Paths
-UPLOAD_DIR=./uploads
-VECTOR_STORE_DIR=./vector_stores
-```
-
-### Step 5: Create config.py
-
-```python
-# config.py
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-class Settings:
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
-    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", 1000))
-    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", 200))
-    RETRIEVER_K: int = int(os.getenv("RETRIEVER_K", 4))
-    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "./uploads")
-    VECTOR_STORE_DIR: str = os.getenv("VECTOR_STORE_DIR", "./vector_stores")
-    
-    def __init__(self):
-        os.makedirs(self.UPLOAD_DIR, exist_ok=True)
-        os.makedirs(self.VECTOR_STORE_DIR, exist_ok=True)
-
-settings = Settings()
-```
-
-### Step 6: Run the Server
-
-```bash
-# Development mode with auto-reload
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Production mode
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
-```
-
-### Step 7: Verify Installation
-
-```bash
-curl http://localhost:8000/health
-
-# Expected response:
-# {"status":"healthy","message":"RAG Agent API is running"}
-```
-
-### Step 8: Access API Documentation
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
----
-
 ## 📖 API Documentation
 
 ### Endpoints Overview
@@ -249,98 +196,8 @@ curl http://localhost:8000/health
 | `GET` | `/documents` | List all documents |
 | `DELETE` | `/documents/{id}` | Delete a document |
 
-### Upload a PDF
-
-```bash
-curl -X POST "http://localhost:8000/upload" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/document.pdf"
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "PDF uploaded and processed successfully",
-  "document_id": "a1b2c3d4",
-  "filename": "document.pdf",
-  "pages_count": 25,
-  "chunks_count": 48
-}
-```
-
-### Query a Document
-
-```bash
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "What is the main conclusion of this document?",
-    "document_id": "a1b2c3d4"
-  }'
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "answer": "The main conclusion of the document is...",
-  "tool_calls_made": 2
-}
-```
-
-### List All Documents
-
-```bash
-curl -X GET "http://localhost:8000/documents"
-```
-
-### Delete a Document
-
-```bash
-curl -X DELETE "http://localhost:8000/documents/a1b2c3d4"
-```
-
-> ⚠️ **Note:** Delete functionality has limitations on Windows. See [Known Issues](#-known-issues--troubleshooting).
-
 ---
 
-## 💻 Frontend Integration
-
-When connecting a frontend client, this API maps cleanly to standard REST patterns. Here is an implementation example using React and TypeScript to interact with the `/query` endpoint:
-
-```typescript
-// types.ts
-export interface QueryRequest {
-  query: string;
-  document_id: string;
-}
-
-export interface QueryResponse {
-  success: boolean;
-  answer: string;
-  tool_calls_made: number;
-}
-
-// api.ts
-export const queryDocument = async (data: QueryRequest): Promise<QueryResponse> => {
-  const response = await fetch('http://localhost:8000/query', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to query document');
-  }
-
-  return response.json();
-};
-```
-
----
 
 ## 🧠 GenAI Workflow Design
 
@@ -479,10 +336,9 @@ vector_stores/
 
 ```python
 system_prompt = """
-You are an AI assistant who answers questions based ONLY on 
-the document. Use the retriever tool to search for information.
-If information is not found, say so clearly.
-DO NOT make up information.
+You are an intelligent AI assistant who answers questions based on the document: "{doc_info['filename']}".
+Use the retriever tool available to search for information in the document. You can make multiple calls if needed.
+If you need to look up some information before asking a follow up question, you are allowed to do that!
 """
 ```
 
@@ -502,7 +358,6 @@ DO NOT make up information.
 | **Prompt Injection** | System prompts are server-side only |
 | **Data Leakage** | Documents isolated per document_id |
 | **Malicious PDFs** | PyPDF handles parsing safely |
-| **API Abuse** | CORS configured (add rate limiting for production) |
 
 ### 4. Current Limitations
 
@@ -535,65 +390,6 @@ PermissionError: [WinError 32] The process cannot access the file
 because it is being used by another process
 ```
 
-#### Root Cause
-
-**Windows file locking behavior:**
-
-```text
-WINDOWS                              LINUX/UNIX
-=======                              ==========
-
-ChromaDB opens file                  ChromaDB opens file
-       │                                    │
-       ▼                                    ▼
-┌─────────────┐                     ┌─────────────┐
-│   File      │                     │   File      │
-│  🔒 LOCKED  │                     │ 🔓 UNLOCKED │
-│Cannot delete│                     │ Can delete  │
-└─────────────┘                     └─────────────┘
-```
-
-- **Windows**: Uses mandatory file locking. Files cannot be deleted while open.
-- **Linux/macOS**: Uses reference counting. Files can be unlinked while open.
-
-#### Solutions
-
-**Option 1: Use Docker (Recommended for Windows)**
-
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-RUN mkdir -p uploads vector_stores
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-```bash
-docker build -t rag-api .
-docker run -p 8000:8000 -e OPENAI_API_KEY=your_key rag-api
-```
-
-**Option 2: Use WSL2 on Windows**
-
-```bash
-# Run in WSL2 terminal
-cd /mnt/c/path/to/project
-source venv/bin/activate
-uvicorn main:app --reload
-```
-
-**Option 3: Manual Cleanup**
-
-```bash
-# Stop the server (Ctrl+C)
-# Manually delete: vector_stores/<document_id>/
-# Restart the server
-```
-
 ### Platform Compatibility Summary
 
 | Feature | Windows | macOS | Linux | Docker |
@@ -605,108 +401,13 @@ uvicorn main:app --reload
 
 ---
 
-## 🚧 Future Improvements
-
-### High Priority
-
-| Improvement | Description | Effort |
-|-------------|-------------|--------|
-| **Multi-document queries** | Query across multiple PDFs simultaneously | Medium |
-| **Authentication** | JWT tokens, API keys, user management | Medium |
-| **Rate limiting** | Prevent API abuse | Low |
-| **Streaming responses** | Real-time token streaming | Medium |
-| **Fix Windows delete** | Proper connection cleanup | Medium |
-
-### Medium Priority
-
-| Improvement | Description | Effort |
-|-------------|-------------|--------|
-| **OCR support** | Handle scanned PDFs | Medium |
-| **Multiple file formats** | DOCX, TXT, HTML, Markdown | Medium |
-| **Conversation memory** | Multi-turn conversations | Medium |
-| **Hybrid search** | Semantic + keyword (BM25) | Medium |
-| **Caching** | Cache frequent queries | Low |
-
-### Nice to Have
-
-| Improvement | Description | Effort |
-|-------------|-------------|--------|
-| **Admin dashboard** | Web UI for management | High |
-| **Analytics** | Query tracking, performance metrics | Medium |
-| **Webhooks** | Notify on processing complete | Low |
-| **Batch upload** | Multiple files at once | Low |
-| **Export conversations** | Download Q&A history | Low |
-
-### Scalability Roadmap
-
-```text
-Current                             Future
-=======                             ======
-
-┌─────────────┐                    ┌──────────────┐
-│  FastAPI    │                    │Load Balancer │
-│  (Single)   │                    └──────┬───────┘
-└──────┬──────┘                           │
-       │                         ┌────────┼────────┐
-       ▼                         ▼        ▼        ▼
-┌─────────────┐              ┌──────┐ ┌──────┐ ┌──────┐
-│  ChromaDB   │              │ API  │ │ API  │ │ API  │
-│  (Local)    │              │  1   │ │  2   │ │  3   │
-└─────────────┘              └──────┘ └──────┘ └──────┘
-                                       │
-                                       ▼
-                              ┌───────────────┐
-                              │   Pinecone/   │
-                              │   Weaviate    │
-                              └───────────────┘
-```
-
----
-
-## 📁 Project Structure
-
-```text
-rag-agent-api/
-├── main.py              # FastAPI application & endpoints
-├── rag_agent.py         # RAG Agent Manager & LangGraph logic
-├── schemas.py           # Pydantic models
-├── config.py            # Configuration settings
-├── requirements.txt     # Python dependencies
-├── .env                 # Environment variables (create this)
-├── README.md            # This file
-├── uploads/             # Uploaded PDF storage
-└── vector_stores/       # ChromaDB vector stores
-    ├── <doc_id>/        # Per-document vector store
-    └── metadata.json    # Document registry
-```
-
----
-
 ## 📝 License
 
 MIT License - feel free to use this project for any purpose.
 
 ---
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📧 Support
-
-For questions or issues:
-- Open a GitHub issue
-- Check existing documentation
-- Review the troubleshooting section
-
----
 
 **Built with ❤️ using FastAPI, LangChain, LangGraph, React, and OpenAI**
+
