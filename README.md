@@ -9,7 +9,7 @@
 This is a production-ready backend built with **FastAPI** and **LangChain** that implements a multi-step GenAI workflow. It allows users to upload PDF documents, process them into a vector store, and perform intelligent queries using an **Agentic RAG** pattern.
 ---
 
-**🌐 Deployed Backend Swagger UI Endpoint:** https://mohdaqib147-rag-agent-document-qna.hf.space/docs
+**🌐 Deployed Backend Swagger Endpoint:** https://mohdaqib147-rag-agent-document-qna.hf.space/docs
 ## 🎯 Problem Statement
 
 ### The Problem
@@ -414,6 +414,7 @@ MIT License - feel free to use this project for any purpose.
 
 
 **Built with ❤️ using FastAPI, LangChain, LangGraph, React, and OpenAI**
+
 
 
 
