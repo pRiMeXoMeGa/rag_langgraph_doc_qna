@@ -301,7 +301,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 | **chunk_size** | 1000 | Balances context vs specificity |
 | **chunk_overlap** | 200 | Prevents information loss at boundaries |
 
-### 4. LLM: GPT-4o-mini
+### 4. LLM: GPT-4o
 
 | Aspect | Details |
 |--------|---------|
@@ -414,6 +414,7 @@ MIT License - feel free to use this project for any purpose.
 
 
 **Built with ❤️ using FastAPI, LangChain, LangGraph, React, and OpenAI**
+
 
 
 
