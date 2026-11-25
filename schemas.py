@@ -13,11 +13,14 @@ class UploadResponse(BaseModel):
 class QueryRequest(BaseModel):
     query: str
     document_id: str
+    session_id: Optional[str] = None  # reuse to keep conversation history
 
 class QueryResponse(BaseModel):
     success: bool
     answer: str
     tool_calls_made: int = 0
+    sources: List[str] = []
+    session_id: Optional[str] = None
 
 class DocumentInfo(BaseModel):
     document_id: str

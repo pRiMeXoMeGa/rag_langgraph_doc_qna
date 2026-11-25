@@ -12,7 +12,7 @@ from schemas import (
     DeleteResponse,
     HealthResponse
 )
-from rag_agent import rag_manager
+from rag_agent import rag_manager, safe_filename
 
 app = FastAPI(
     title="RAG Agent API",
@@ -43,12 +43,15 @@ async def upload_pdf(file: UploadFile = File(...)):
     - **file**: PDF file to upload
     """
     # validate file type
-    if not file.filename.endswith('.pdf'):
+    if not file.filename or not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-    
-    # save uploaded file
-    file_path = os.path.join(settings.UPLOAD_DIR, file.filename)
-    
+
+    # save under a unique, sanitised name so uploads can't escape UPLOAD_DIR
+    # or overwrite another document with the same filename
+    filename = safe_filename(file.filename)
+    document_id = rag_manager.new_document_id()
+    file_path = os.path.join(settings.UPLOAD_DIR, f"{document_id}_{filename}")
+
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -57,7 +60,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     
     # process pdf and create embeddings
     try:
-        result = rag_manager.process_pdf(file_path, file.filename)
+        result = rag_manager.process_pdf(file_path, filename, document_id)
         
         return UploadResponse(
             success=True,
@@ -82,12 +85,14 @@ async def query_document(request: QueryRequest):
     - **document_id**: The ID of the document to query
     """
     try:
-        result = rag_manager.query_document(request.document_id, request.query)
-        
+        result = rag_manager.query_document(request.document_id, request.query, request.session_id)
+
         return QueryResponse(
             success=True,
             answer=result["answer"],
-            tool_calls_made=result["tool_calls_made"]
+            tool_calls_made=result["tool_calls_made"],
+            sources=result["sources"],
+            session_id=result["session_id"]
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
